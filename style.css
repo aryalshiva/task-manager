@@ -16,36 +16,80 @@ body {
     width: 100%;
     background-color: #fff;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
     box-sizing: border-box;
 }
 
 header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+.header-controls {
+    display: flex;
     align-items: center;
     margin-bottom: 20px;
 }
 
-input[type="text"] {
-    width: 80%;
+input[type="text"],
+input[type="number"] {
+    width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
+    margin-right: 10px;
+    box-sizing: border-box;
 }
 
 button {
-    padding: 10px 20px;
+    padding: 10px 15px;
     border: none;
-    background-color: #007bff;
     color: #fff;
     border-radius: 4px;
     cursor: pointer;
+    margin-right: 5px;
 }
 
 button:hover {
+    opacity: 0.9;
+}
+
+button#addTaskBtn {
+    background-color: #007bff;
+}
+
+button#addTaskBtn:hover {
     background-color: #0056b3;
+}
+
+button#showCompletedBtn {
+    background-color: #28a745;
+}
+
+button#showCompletedBtn:hover {
+    background-color: #218838;
+}
+
+button#showIncompleteBtn {
+    background-color: #dc3545;
+}
+
+button#showIncompleteBtn:hover {
+    background-color: #c82333;
+}
+
+button#showAllBtn {
+    background-color: #6c757d;
+}
+
+button#showAllBtn:hover {
+    background-color: #5a6268;
+}
+
+.filter-controls {
+    margin-bottom: 20px;
 }
 
 ul {
@@ -61,13 +105,24 @@ li {
     padding: 10px;
     margin-bottom: 10px;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 li.completed {
     text-decoration: line-through;
     color: #999;
+}
+
+li span {
+    flex: 1;
+    word-break: break-word;
+}
+
+li div {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
 }
 
 button.delete-btn {
@@ -90,8 +145,15 @@ button.complete-btn {
     border-radius: 4px;
     padding: 5px 10px;
     cursor: pointer;
+    margin-right: 5px;
 }
 
 button.complete-btn:hover {
     background-color: #218838;
+}
+
+.countdown {
+    font-size: 0.9em;
+    color: #555;
+    margin-top: 5px;
 }

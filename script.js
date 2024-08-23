@@ -2,28 +2,58 @@
 document.addEventListener('DOMContentLoaded', () => {
     const addTaskBtn = document.getElementById('addTaskBtn');
     const taskInput = document.getElementById('taskInput');
+    const daysInput = document.getElementById('daysInput');
     const taskList = document.getElementById('taskList');
+    const showCompletedBtn = document.getElementById('showCompletedBtn');
+    const showIncompleteBtn = document.getElementById('showIncompleteBtn');
+    const showAllBtn = document.getElementById('showAllBtn');
 
-    // Function to create a new task
-    function createTask(taskText, completed = false) {
+    function createTask(taskText, days, completed = false) {
         const li = document.createElement('li');
+        const creationTimestamp = new Date().toLocaleString(); // Creation timestamp
+        const dueDateTime = new Date();
+        dueDateTime.setDate(dueDateTime.getDate() + parseInt(days, 10));
+        const remainingTime = dueDateTime - new Date();
+
+        if (remainingTime < 0) {
+            alert("Due date must be in the future.");
+            return null;
+        }
+
         li.className = completed ? 'completed' : '';
 
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const remainingTime = dueDateTime - now;
+            if (remainingTime < 0) {
+                li.querySelector('.countdown').textContent = 'Due date passed';
+                clearInterval(timerInterval);
+            } else {
+                const daysRemaining = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+                const hoursRemaining = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutesRemaining = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                const secondsRemaining = Math.floor((remainingTime % (1000 * 60)) / 1000);
+                li.querySelector('.countdown').textContent = `${daysRemaining}d ${hoursRemaining}h ${minutesRemaining}m ${secondsRemaining}s remaining`;
+            }
+        };
+
         li.innerHTML = `
-            <span>${taskText}</span>
+            <span>${taskText} <br><small>Created: ${creationTimestamp}</small></span>
+            <div class="countdown"></div>
             <div>
                 <button class="complete-btn">Complete</button>
                 <button class="delete-btn">Delete</button>
             </div>
         `;
 
-        // Add event listener for the Complete button
+        updateCountdown();
+        const timerInterval = setInterval(updateCountdown, 1000);
+
         li.querySelector('.complete-btn').addEventListener('click', () => {
             li.classList.toggle('completed');
             saveTasks(); // Save tasks when marked complete
         });
 
-        // Add event listener for the Delete button
         li.querySelector('.delete-btn').addEventListener('click', () => {
             li.remove();
             saveTasks(); // Save tasks when deleted
@@ -32,45 +62,69 @@ document.addEventListener('DOMContentLoaded', () => {
         return li;
     }
 
-    // Function to save tasks to local storage
     function saveTasks() {
         const tasks = [];
         taskList.querySelectorAll('li').forEach((li) => {
             tasks.push({
-                text: li.querySelector('span').textContent,
+                text: li.querySelector('span').textContent.split(' <br>')[0],
+                days: parseInt(li.querySelector('.countdown').textContent.split('d ')[0], 10),
                 completed: li.classList.contains('completed')
             });
         });
         localStorage.setItem('tasks', JSON.stringify(tasks));
     }
 
-    // Function to load tasks from local storage
     function loadTasks() {
         const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
         tasks.forEach((task) => {
-            const newTask = createTask(task.text, task.completed);
-            taskList.appendChild(newTask);
+            const newTask = createTask(task.text, task.days, task.completed);
+            if (newTask) {
+                taskList.appendChild(newTask);
+            }
         });
     }
 
-    // Load tasks when the page loads
+    function showCompletedTasks() {
+        taskList.querySelectorAll('li').forEach((li) => {
+            li.style.display = li.classList.contains('completed') ? 'flex' : 'none';
+        });
+    }
+
+    function showIncompleteTasks() {
+        taskList.querySelectorAll('li').forEach((li) => {
+            li.style.display = !li.classList.contains('completed') ? 'flex' : 'none';
+        });
+    }
+
+    function showAllTasks() {
+        taskList.querySelectorAll('li').forEach((li) => {
+            li.style.display = 'flex';
+        });
+    }
+
     loadTasks();
 
-    // Add task when clicking the Add Task button
     addTaskBtn.addEventListener('click', () => {
         const taskText = taskInput.value.trim();
-        if (taskText !== '') {
-            const newTask = createTask(taskText);
-            taskList.appendChild(newTask);
-            taskInput.value = ''; // Clear the input field
-            saveTasks(); // Save tasks when a new task is added
+        const days = daysInput.value.trim();
+        if (taskText !== '' && days !== '') {
+            const newTask = createTask(taskText, days);
+            if (newTask) {
+                taskList.appendChild(newTask);
+                taskInput.value = '';
+                daysInput.value = '';
+                saveTasks();
+            }
         }
     });
 
-    // Add task when pressing Enter key
     taskInput.addEventListener('keypress', (event) => {
         if (event.key === 'Enter') {
             addTaskBtn.click();
         }
     });
+
+    showCompletedBtn.addEventListener('click', showCompletedTasks);
+    showIncompleteBtn.addEventListener('click', showIncompleteTasks);
+    showAllBtn.addEventListener('click', showAllTasks);
 });
