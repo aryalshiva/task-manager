@@ -9,13 +9,13 @@ Created by [Shiva Aryal](mailto:shiva.aryal62@gmail.com), this application uses 
 ### Screenshots
 
 ![Task Manager Screenshot](img/TaskManager1.png)
-*Main view of the Task Manager application*
+
 
 ![Task Manager Screenshot](img/TaskManager2.png)
-*Task details and controls*
+
 
 ![Task Manager Screenshot](img/TaskManager3.png)
-*Filtering and task completion options*
+
 
 ## Features
 
