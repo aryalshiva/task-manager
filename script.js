@@ -1,4 +1,3 @@
-// script.js
 document.addEventListener('DOMContentLoaded', () => {
     const addTaskBtn = document.getElementById('addTaskBtn');
     const taskInput = document.getElementById('taskInput');
@@ -8,23 +7,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const showIncompleteBtn = document.getElementById('showIncompleteBtn');
     const showAllBtn = document.getElementById('showAllBtn');
 
-    function createTask(taskText, days, completed = false) {
+    function createTask(taskText, days, completed = false, creationTimestamp = new Date().toISOString(), completionTime = null) {
         const li = document.createElement('li');
-        const creationTimestamp = new Date().toLocaleString(); // Creation timestamp
         const dueDateTime = new Date();
         dueDateTime.setDate(dueDateTime.getDate() + parseInt(days, 10));
-        const remainingTime = dueDateTime - new Date();
-
-        if (remainingTime < 0) {
-            alert("Due date must be in the future.");
-            return null;
-        }
+        const dueDateISOString = dueDateTime.toISOString();
 
         li.className = completed ? 'completed' : '';
 
+        // Function to update countdown based on due date
         const updateCountdown = () => {
             const now = new Date().getTime();
-            const remainingTime = dueDateTime - now;
+            const remainingTime = new Date(dueDateISOString).getTime() - now;
             if (remainingTime < 0) {
                 li.querySelector('.countdown').textContent = 'Due date passed';
                 clearInterval(timerInterval);
@@ -38,20 +32,32 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         li.innerHTML = `
-            <span>${taskText} <br><small>Created: ${creationTimestamp}</small></span>
-            <div class="countdown"></div>
+            <span class="task-name">${taskText}</span>
+            <div class="countdown" data-due-date="${dueDateISOString}"></div>
+            <div class="completion-time"></div>
             <div>
                 <button class="complete-btn">Complete</button>
                 <button class="delete-btn">Delete</button>
             </div>
         `;
 
-        updateCountdown();
-        const timerInterval = setInterval(updateCountdown, 1000);
+        if (completed && completionTime) {
+            displayCompletionTime(li, completionTime);
+            li.querySelector('.task-name').style.textDecoration = 'line-through';
+        } else {
+            updateCountdown();
+            var timerInterval = setInterval(updateCountdown, 1000);
+        }
 
         li.querySelector('.complete-btn').addEventListener('click', () => {
-            li.classList.toggle('completed');
-            saveTasks(); // Save tasks when marked complete
+            if (!li.classList.contains('completed')) {
+                li.classList.add('completed');
+                clearInterval(timerInterval);
+                li.querySelector('.task-name').style.textDecoration = 'line-through'; // Apply strikethrough to task name
+                const completionTime = calculateTimeTaken(new Date().toISOString(), creationTimestamp);
+                displayCompletionTime(li, completionTime);
+                saveTasks(); // Save tasks with completion time
+            }
         });
 
         li.querySelector('.delete-btn').addEventListener('click', () => {
@@ -62,28 +68,104 @@ document.addEventListener('DOMContentLoaded', () => {
         return li;
     }
 
-    function saveTasks() {
-        const tasks = [];
-        taskList.querySelectorAll('li').forEach((li) => {
-            tasks.push({
-                text: li.querySelector('span').textContent.split(' <br>')[0],
-                days: parseInt(li.querySelector('.countdown').textContent.split('d ')[0], 10),
-                completed: li.classList.contains('completed')
-            });
-        });
-        localStorage.setItem('tasks', JSON.stringify(tasks));
+
+    // Display completion time and hide countdown
+    function displayCompletionTime(li, completionTime) {
+        li.querySelector('.countdown').style.display = 'none';
+        li.querySelector('.completion-time').textContent = `Time taken: ${completionTime}`;
     }
 
+    // Function to calculate time taken based on completion and creation time
+    function calculateTimeTaken(completionTimeISOString, creationTimeISOString) {
+        const creationTime = new Date(creationTimeISOString).getTime();
+        const completedTime = new Date(completionTimeISOString).getTime();
+
+        console.log(`Creation Time: ${creationTime}`);
+        console.log(`Completion Time: ${completedTime}`);
+
+        let elapsedTime = completedTime - creationTime;
+
+        // Ensure elapsed time is non-negative
+        if (elapsedTime < 0) {
+            elapsedTime = 0;
+        }
+
+        const secondsTaken = Math.floor((elapsedTime / 1000) % 60);
+        const minutesTaken = Math.floor((elapsedTime / (1000 * 60)) % 60);
+        const hoursTaken = Math.floor((elapsedTime / (1000 * 60 * 60)) % 24);
+        const daysTaken = Math.floor(elapsedTime / (1000 * 60 * 60 * 24));
+
+        let timeTaken = "";
+        if (daysTaken > 0) timeTaken += `${daysTaken}d `;
+        if (hoursTaken > 0 || daysTaken > 0) timeTaken += `${hoursTaken}h `;
+        if (minutesTaken > 0 || hoursTaken > 0 || daysTaken > 0) timeTaken += `${minutesTaken}m `;
+        timeTaken += `${secondsTaken}s`;
+
+        return timeTaken.trim();
+    }
+
+    // Save tasks to local storage
+    function saveTasks() {
+        try {
+            const tasks = [];
+            taskList.querySelectorAll('li').forEach((li) => {
+                tasks.push({
+                    text: li.querySelector('span').textContent,
+                    dueDateTime: li.querySelector('.countdown').dataset.dueDate,
+                    completed: li.classList.contains('completed'),
+                    creationTimestamp: li.querySelector('small') ? li.querySelector('small').textContent.replace('Created: ', '') : '',
+                    completionTime: li.querySelector('.completion-time').textContent.replace('Time taken: ', '')
+                });
+            });
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        } catch (error) {
+            console.error("Error saving tasks to localStorage:", error);
+        }
+    }
+
+    // Load tasks from local storage
     function loadTasks() {
-        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        let tasks = [];
+        try {
+            tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        } catch (error) {
+            console.error("Error parsing tasks from localStorage:", error);
+            localStorage.removeItem('tasks'); // Remove corrupted data
+        }
         tasks.forEach((task) => {
-            const newTask = createTask(task.text, task.days, task.completed);
+            const newTask = createTask(task.text, 0, task.completed, task.creationTimestamp, task.completionTime);
             if (newTask) {
+                newTask.querySelector('.countdown').dataset.dueDate = task.dueDateTime;
                 taskList.appendChild(newTask);
+                if (!task.completed) {
+                    updateCountdownForTask(newTask, task.dueDateTime);
+                }
             }
         });
     }
 
+    // Update countdown for a specific task
+    function updateCountdownForTask(li, dueDateISOString) {
+        const updateCountdown = () => {
+            const now = new Date().getTime();
+            const remainingTime = new Date(dueDateISOString).getTime() - now;
+            if (remainingTime < 0) {
+                li.querySelector('.countdown').textContent = 'Due date passed';
+                clearInterval(timerInterval);
+            } else {
+                const daysRemaining = Math.floor(remainingTime / (1000 * 60 * 60 * 24));
+                const hoursRemaining = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutesRemaining = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60));
+                const secondsRemaining = Math.floor((remainingTime % (1000 * 60)) / 1000);
+                li.querySelector('.countdown').textContent = `${daysRemaining}d ${hoursRemaining}h ${minutesRemaining}m ${secondsRemaining}s remaining`;
+            }
+        };
+
+        updateCountdown();
+        const timerInterval = setInterval(updateCountdown, 1000);
+    }
+
+    // Show tasks based on their completion status
     function showCompletedTasks() {
         taskList.querySelectorAll('li').forEach((li) => {
             li.style.display = li.classList.contains('completed') ? 'flex' : 'none';
@@ -102,12 +184,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    loadTasks();
+    loadTasks(); // Load tasks on page load
 
     addTaskBtn.addEventListener('click', () => {
         const taskText = taskInput.value.trim();
         const days = daysInput.value.trim();
-        if (taskText !== '' && days !== '') {
+        if (taskText !== '' && days !== '' && !isNaN(days) && parseInt(days, 10) > 0) {
             const newTask = createTask(taskText, days);
             if (newTask) {
                 taskList.appendChild(newTask);
@@ -115,6 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 daysInput.value = '';
                 saveTasks();
             }
+        } else {
+            // Handle invalid input
+            alert("Please enter a valid task and a positive number of days.");
         }
     });
 

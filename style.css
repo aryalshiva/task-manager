@@ -109,7 +109,7 @@ li {
     align-items: flex-start;
 }
 
-li.completed {
+li.completed .task-name {
     text-decoration: line-through;
     color: #999;
 }
