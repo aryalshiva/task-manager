@@ -2,7 +2,7 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(135deg, #003366, #66cccc);
+    background: linear-gradient(135deg, #003569, #7467e6);
     margin: 0;
     padding: 0;
     display: flex;
@@ -14,11 +14,17 @@ body {
 .container {
     max-width: 600px;
     width: 100%;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.2);
+    /* Semi-transparent background */
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    /* Enhanced shadow for a glassy effect */
     padding: 20px;
     box-sizing: border-box;
+    backdrop-filter: blur(10px);
+    /* Blur effect to mimic glass */
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    /* Semi-transparent border */
 }
 
 header {
@@ -37,12 +43,13 @@ header {
 input[type="text"],
 input[type="number"] {
     width: calc(100% - 120px);
-    /* Adjust width for smaller screens */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
     margin-right: 10px;
     box-sizing: border-box;
+    background: rgba(255, 255, 255, 0.5);
+    /* Light background for input fields */
 }
 
 button {
@@ -52,6 +59,8 @@ button {
     border-radius: 4px;
     cursor: pointer;
     margin-right: 5px;
+    background: rgba(0, 0, 0, 0.3);
+    /* Semi-transparent button background */
 }
 
 button:hover {
@@ -101,8 +110,9 @@ ul {
 }
 
 li {
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
+    background-color: rgba(255, 255, 255, 0.8);
+    /* Slightly opaque list items */
+    border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 4px;
     padding: 10px;
     margin-bottom: 10px;
