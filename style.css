@@ -2,7 +2,7 @@
 
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background: linear-gradient(135deg, #003366, #66cccc);
     margin: 0;
     padding: 0;
     display: flex;
@@ -29,13 +29,15 @@ header {
 
 .header-controls {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     margin-bottom: 20px;
 }
 
 input[type="text"],
 input[type="number"] {
-    width: 100%;
+    width: calc(100% - 120px);
+    /* Adjust width for smaller screens */
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -156,4 +158,57 @@ button.complete-btn:hover {
     font-size: 0.9em;
     color: #555;
     margin-top: 5px;
+}
+
+
+/* Media Queries for Responsiveness */
+
+
+/* For screens smaller than 768px */
+
+@media (max-width: 768px) {
+    .header-controls {
+        flex-direction: column;
+    }
+    input[type="text"],
+    input[type="number"] {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+
+/* For screens smaller than 480px */
+
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    header {
+        margin-bottom: 15px;
+    }
+    .header-controls {
+        flex-direction: column;
+    }
+    input[type="text"],
+    input[type="number"] {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    button {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    button.complete-btn,
+    button.delete-btn {
+        padding: 5px 10px;
+    }
+    ul {
+        padding: 0;
+        margin: 0;
+    }
 }
